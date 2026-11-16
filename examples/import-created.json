@@ -1,0 +1,18 @@
+{
+  "protocol": "agy-import",
+  "protocol_version": 1,
+  "operation_id": "example-import-001",
+  "status": "created",
+  "conversation_id": "b3241dfa-54f4-4d46-9a83-e907d65f6541",
+  "workspace": "/home/example/projects/demo",
+  "database_path": "/home/example/.gemini/antigravity-cli/conversations/b3241dfa-54f4-4d46-9a83-e907d65f6541.db",
+  "transcript_path": "/home/example/.gemini/antigravity-cli/brain/b3241dfa-54f4-4d46-9a83-e907d65f6541/.system_generated/logs/transcript_full.jsonl",
+  "messages_written": 2,
+  "representation": "user_assistant_text",
+  "verification": {
+    "storage": "passed",
+    "transcript_round_trip": "passed",
+    "native_resume": "not_run"
+  },
+  "warnings": []
+}

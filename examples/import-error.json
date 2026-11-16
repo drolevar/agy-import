@@ -1,0 +1,11 @@
+{
+  "protocol": "agy-import",
+  "protocol_version": 1,
+  "operation_id": "example-import-001",
+  "status": "error",
+  "error": {
+    "code": "unsupported_target",
+    "message": "This Antigravity build has no verified storage adapter in this helper release.",
+    "outcome": "not_started"
+  }
+}

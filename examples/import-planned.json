@@ -1,0 +1,10 @@
+{
+  "protocol": "agy-import",
+  "protocol_version": 1,
+  "operation_id": "example-import-001",
+  "status": "planned",
+  "workspace": "/home/example/projects/demo",
+  "messages_planned": 2,
+  "representation": "user_assistant_text",
+  "warnings": []
+}

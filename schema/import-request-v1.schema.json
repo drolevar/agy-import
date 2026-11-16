@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/drolevar/agy-import/raw/main/schema/import-request-v1.schema.json",
+  "title": "agy-import request v1 (proposed)",
+  "description": "Create a new conversation from selected user/assistant text. Byte limits, absolute destination paths and persistence rules are specified in docs/protocol.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "protocol_version", "operation_id", "target", "history"],
+  "properties": {
+    "protocol": {"const": "agy-import"},
+    "protocol_version": {"type": "integer", "const": 1},
+    "operation_id": {"$ref": "#/$defs/operation_id"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "application": {"type": "string"},
+        "provider": {"type": "string"},
+        "conversation_id": {"type": "string"},
+        "workspace": {"type": "string"},
+        "selection": {"type": "string"},
+        "revision": {"type": "string"}
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workspace"],
+      "properties": {
+        "workspace": {"type": "string", "minLength": 1},
+        "title": {"type": "string"}
+      }
+    },
+    "history": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["representation", "truncated", "redacted", "messages"],
+      "properties": {
+        "representation": {"const": "user_assistant_text"},
+        "truncated": {"type": "boolean"},
+        "redacted": {"type": "boolean"},
+        "messages": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "text"],
+            "properties": {
+              "role": {"enum": ["user", "assistant"]},
+              "text": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allow_truncated_history": {"type": "boolean", "default": false}
+      }
+    }
+  },
+  "$defs": {
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "not": {"pattern": "[^A-Za-z0-9._:-]"}
+    }
+  }
+}
