@@ -41,6 +41,7 @@ The first implementation does not transfer native execution state, pending tools
 | Document | Purpose |
 | --- | --- |
 | [Architecture](docs/architecture.md) | Why the helper exists, ownership, target storage and recovery |
+| [Schema compatibility](docs/schema-compatibility.md) | Native build/store checks, upgrade refusal, recovery, and certification policy |
 | [Showagent integration](docs/showagent-integration.md) | One-call consumer API, discovery, packaging and changes to the existing adapter |
 | [Protocol v1](docs/protocol.md) | Request/result contract, operation identity and error semantics |
 | [Implementation plan](docs/implementation-plan.md) | Current progress, remaining milestones, and evidence needed before enabling native writes |

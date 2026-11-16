@@ -85,7 +85,7 @@ The final command should list only this module. The module's tests and fixtures 
 
 CI runs the process-contract tests on Linux, Windows, and macOS. These checks establish client/transport behavior, not native Antigravity compatibility. The module's Go language floor is 1.22; use a currently supported Go compiler for development.
 
-For the complete request/result contract, see the repository's [protocol specification](https://github.com/drolevar/agy-import/blob/docs/consumer-contract/docs/protocol.md).
+For the complete request/result contract, see the repository's [protocol specification](https://github.com/drolevar/agy-import/blob/main/docs/protocol.md).
 
 ## License
 

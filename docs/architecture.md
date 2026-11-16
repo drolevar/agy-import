@@ -46,6 +46,8 @@ The helper is expected to use `database/sql` with [modernc.org/sqlite](https://p
 
 A storage adapter is selected by verified target-build and schema evidence. Unknown combinations fail before publication. A matching SQL table layout alone is insufficient proof that protobuf semantics and auxiliary files are compatible.
 
+The [schema compatibility policy](schema-compatibility.md) defines the required build/store checks, inspection constraints, upgrade handling, and native certification evidence. These guards belong to the planned helper and installer; the implemented client validates only the public process contract.
+
 Current showagent [discovers Antigravity through JSONL mirrors](https://github.com/drolevar/showagent/blob/6a2756ac1556fdbb8ca8932c249bc57558287e7b/internal/session/antigravity.go), checks separately for the conversation database, and reads workspace metadata from protobuf/cache sources. Consequently, an integration-ready import must cover the conversation database, required summary/workspace metadata, and a verified transcript mirror. The result distinguishes database and transcript paths; showagent's `Row.File` receives the transcript path.
 
 Native metadata must be handled as protobuf binary data. [Protobuf documentation](https://protobuf.dev/programming-guides/proto3/#unknown-fields) explains that JSON conversion can lose unknown fields. Preserving unknown bytes does not establish that a modification is semantically valid; shared metadata updates still require native tests. New conversations should be built from understood records rather than copied from a populated user session.

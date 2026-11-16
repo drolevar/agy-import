@@ -48,6 +48,8 @@ Use a fabricated helper executable to verify transport behavior before a native 
 
 Choose an exact installed Antigravity CLI build on the initial development platform and record its version, architecture, executable digest, and observed schema. Use synthetic sessions in an isolated profile to identify required step records, protobuf fields, IDs, summary metadata, workspace representation, and transcript mirrors.
 
+Implement the [schema compatibility policy](schema-compatibility.md) as the native writer's mandatory gate. Selection requires both a verified build and a matching actual store profile; recovery must retain and revalidate the adapter and format generation that began the operation.
+
 The existing [session-migrate format research](https://github.com/xhluca/session-migrate/blob/45351ff95ce79684c23377920b92026ecbe9759b/docs/antigravity-format.md) and [interoperability fixture project](https://github.com/xhluca/antigravity-session-interoperability) are reference material. Their proven target is Antigravity CLI 1.1.16 on Linux x86-64. Verify current behavior rather than silently extending that claim to another release. Preserve attribution and applicable license notices for reused material.
 
 Start with user and assistant text. Native requirements for timestamps and other metadata must be distinguished from unavailable original source metadata. If the writer creates timestamps, label them as generated rather than source facts.
