@@ -1,0 +1,4 @@
+# Local Go test and coverage artifacts.
+/client/coverage.out
+/client/*.test
+/client/*.test.exe

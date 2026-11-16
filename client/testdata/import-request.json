@@ -1,0 +1,25 @@
+{
+  "protocol": "agy-import",
+  "protocol_version": 1,
+  "operation_id": "example-import-001",
+  "source": {
+    "application": "showagent",
+    "provider": "codex",
+    "conversation_id": "synthetic-source-001",
+    "workspace": "C:\\src\\example",
+    "selection": "all"
+  },
+  "target": {
+    "workspace": "/home/example/projects/demo",
+    "title": "Imported example"
+  },
+  "history": {
+    "representation": "user_assistant_text",
+    "truncated": false,
+    "redacted": false,
+    "messages": [
+      {"role": "user", "text": "Use Parquet for the datasets. Keep Unicode: blåbær."},
+      {"role": "assistant", "text": "The project will contain Parquet datasets and JSON metadata.\n\n    preserve indentation"}
+    ]
+  }
+}

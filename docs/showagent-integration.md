@@ -1,6 +1,6 @@
 # Easy consumption by showagent
 
-This is the planned integration contract. The client and importer have not been implemented or released. The Go examples describe an API target and are not currently compilable against this repository.
+This is the integration contract for the implemented [Go client](../client/). The API below is available in this checkout and is tested against a fake helper. The native importer, release tags, and showagent adapter are still pending; a real import requires the native implementation and compatibility gates.
 
 ## Consumer acceptance criterion
 
@@ -8,7 +8,7 @@ A normal import is one `Import(ctx, request)` call. `showagent` supplies its sel
 
 Use the existing conversion seam rather than the public `showagent transcript --json` command. At [showagent commit 6a2756a](https://github.com/drolevar/showagent/blob/6a2756ac1556fdbb8ca8932c249bc57558287e7b/internal/session/handoff.go), `Convert` extracts `[]Turn`, applies the selected scope and calls `WriteConverted`. The public transcript command is intentionally redacted, defaults to 50 turns and caps output at 500; it cannot transparently carry every conversion.
 
-## Planned public Go API
+## Public Go API
 
 ```go
 import agyimport "github.com/drolevar/agy-import/client"
@@ -33,11 +33,11 @@ result, err := importer.Import(ctx, agyimport.Request{
 })
 ```
 
-`New` only stores configuration; it does not launch a process. `Import` accepts an existing operation ID. If omitted, the client derives the protocol-defined stable ID before starting the helper and includes it on any error. This makes retrying the same request useful even if the process dies before emitting stdout. The client fills protocol/version/representation constants and the unredacted, untruncated defaults; callers do not construct a wire envelope.
+`New` only stores configuration; it does not launch a process. `Import` accepts an existing operation ID. For a valid request with no ID, the client derives the protocol-defined stable ID before starting the helper and retains it on transport errors. This makes retrying the same request useful even if the process dies before emitting stdout. The client fills protocol/version/representation constants and the unredacted, untruncated defaults; callers do not construct a wire envelope.
 
 `Request` also exposes explicit `Truncated`, `Redacted` and `AllowTruncatedHistory` fields. A deliberate selection of the last N turns is a selection, not unintended truncation. Importing incomplete producer output requires explicit acceptance. Optional source fields do not have to be fabricated when a source reader lacks them.
 
-`Preview(ctx, request)` uses the same contract and `import --dry-run`, returning a typed plan without writing to the target store. `Probe(ctx)` may support a settings screen, but a prior probe is not required for `Import`, and a cached successful probe never substitutes for the helper's per-import checks.
+`Preview(ctx, request)` uses the same contract and `import --dry-run`, returning a typed plan under the helper's no-write contract. `RequestDigest(request)` exposes the semantic digest without launching a process. A `Probe` API is not implemented; a future diagnostic command may support a settings screen, but a prior probe is not required for `Import`, and a cached successful probe never substitutes for the helper's per-import checks.
 
 ## Typed results and errors
 
@@ -57,7 +57,7 @@ The helper validates the request and target, reconciles previous intent, install
 
 The helper honors the existing `ANTIGRAVITY_HOME` parent-directory convention itself. `showagent` therefore does not need a new hard-coded storage path for ordinary use. `Options.Store` is an explicit direct-store override for alternate profiles and isolated tests; see the protocol's resolution rules.
 
-The wrapper must drain stdout and stderr without deadlocks, retain bounded diagnostics, reject multiple response documents, and honor context cancellation. Protocol limits and error codes are in [protocol.md](protocol.md). Diagnostic messages must not echo transcripts. A transport failure and a structured helper error remain distinguishable.
+The wrapper drains stdout and stderr, retains bounded diagnostics, rejects multiple response documents, and honors context cancellation. On Linux and macOS it terminates the helper's process group; on Windows it terminates the direct helper, without claiming descendant-tree cleanup. Inherited-pipe waits are bounded. Protocol limits and error codes are in [protocol.md](protocol.md). Diagnostic messages must not echo transcripts. A transport failure and a structured helper error remain distinguishable.
 
 ## Executable discovery and installation
 
@@ -74,7 +74,7 @@ Ship platform release archives and checksums. A user can install the helper once
 
 ## Independent client module
 
-The planned `client/` directory is its own module, `github.com/drolevar/agy-import/client`, with no third-party requirements. It contains both protocol types and the process wrapper. A separate module is needed to keep native-storage dependencies out of the consumer's module graph, not merely out of its linked executable.
+The `client/` directory is its own module, `github.com/drolevar/agy-import/client`, with no third-party requirements. It contains both protocol types and the process wrapper. A separate module keeps native-storage dependencies out of the consumer's module graph, not merely out of its linked executable.
 
 Root binary releases use tags such as `v0.x.y`; nested client-module releases use `client/v0.x.y`. The helper protocol, client API and native adapter versions have separate compatibility meanings. Every binary release that advertises protocol v1 must pass the client contract fixtures. A consumer pins a client release and can select any helper release that implements the required protocol and target adapter.
 
@@ -92,4 +92,4 @@ Root binary releases use tags such as `v0.x.y`; nested client-module releases us
 
 The [current import flow](https://github.com/drolevar/showagent/blob/6a2756ac1556fdbb8ca8932c249bc57558287e7b/internal/session/import.go) has an operation ID that is not yet passed into `WriteConverted`. Make that request-context change explicitly. The simpler `Convert` path can use the client's deterministic default identity.
 
-Resume remains `agy --conversation ID` from the verified destination workspace, under the caller's existing resume policy. Neither client nor helper auto-resumes as part of import. No patch to `showagent` is included in this design-only revision.
+Resume remains `agy --conversation ID` from the verified destination workspace, under the caller's existing resume policy. Neither client nor helper auto-resumes as part of import. No patch to `showagent` is included in this client milestone.

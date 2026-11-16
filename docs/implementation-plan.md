@@ -1,6 +1,14 @@
 # Implementation plan
 
-This is a plan for future implementation. The current change provides documentation, schemas, and examples only. It does not ship an executable or client package, and no native Antigravity compatibility has been verified by this project.
+This plan tracks the complete native-import goal. The consumer contract and independent Go client are implemented in this checkout; the client is exercised against a fake helper. No native importer executable is shipped, no client release is tagged, and no native Antigravity compatibility has been verified by this project.
+
+| Milestone | Current state |
+| --- | --- |
+| Consumer contract | Documented, with schemas and shared examples; proposed v1 remains unreleased |
+| Independent Go client | Implemented, with request, discovery, transport, and fake-helper tests |
+| Native storage profile and installer | Pending |
+| Real native continuation and showagent discovery | Not run |
+| Showagent adapter and release packaging | Pending |
 
 ## Outcome
 
@@ -25,6 +33,8 @@ The contract must define:
 **Gate:** all example requests/results validate against their schemas, documentation agrees with the schemas, and one ordinary showagent conversion can be expressed without a diagnostic-command prerequisite or Antigravity schema knowledge.
 
 ## 2. Implement the independent Go client
+
+The [client module](../client/) now provides `New`, `Import`, `Preview`, and `RequestDigest`, with typed requests, results, and errors. Its tests are self-contained and use only synthetic data. The CI workflow runs on Linux, Windows, and macOS and separately checks that the module has no third-party dependencies. See the client README for reproduction commands and the workflow run for the results on each platform.
 
 Create `github.com/drolevar/agy-import/client` as its own Go module using only the standard library. Provide request/result types and a normal `Import(ctx, request)` call. Share the wire types with the helper without making the client depend on native storage packages.
 

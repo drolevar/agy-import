@@ -1,6 +1,6 @@
 # Import protocol v1
 
-This document defines the proposed first public process contract. No importer or client is implemented in this revision. The JSON schemas and examples are reviewable specification artifacts; v1 is not frozen until its first release.
+This document defines the proposed first public process contract. The [Go client](../client/) implements its consumer side and is tested against a fake helper; the native importer is not yet implemented. The JSON schemas and examples remain reviewable specification artifacts; v1 is not frozen until its first release.
 
 ## Transport
 
@@ -10,7 +10,11 @@ The normal operation performs request validation, target detection, version/sche
 
 Reject duplicate JSON object keys at every depth and invalid Unicode, including unpaired UTF-16 surrogate escapes such as `"\uD800"`. Decode valid escapes to Unicode scalar-value strings before validation and hashing. Do not repair invalid strings with replacement characters. These parsing rules apply before JSON Schema validation and keep intent and digests consistent across languages.
 
+JSON member names are case-sensitive. Additional response fields must not satisfy or overwrite required fields with different casing. The Go client limits response nesting to 128 containers, including additive fields, independently of the response byte limit.
+
 Exit codes are coarse: `0` for `created`, `already_exists`, or `planned`; `1` for a structured operational error; `2` for invalid CLI usage or request syntax. CLI usage errors may have no JSON response. Machine decisions use the validated response and error outcome, not the exit code alone. A success document with a nonzero exit is not accepted as normal success: preserve any known committed result as diagnostic evidence and report the transport discrepancy.
+
+For that discrepancy, a fully validated `created` result supports `committed`. A fully validated `already_exists` result identifies a previous completed operation but does not establish this invocation's persistence effects, so the client reports `uncertain` while returning the validated result and conversation ID. A validated `planned` result supports `not_started`.
 
 ## Request
 
@@ -38,7 +42,7 @@ The workspace is supplied independently of `source.workspace`. Validate that it 
 
 ## Operation identity and request digest
 
-The helper stores operations in a ledger scoped to the resolved destination store. An explicit operation ID from a caller is retained verbatim. The planned Go client can derive an ID when its caller omits one: `sha256:` followed by the lowercase hexadecimal request digest. It does this before starting the child, so even a transport error carries a known operation ID.
+The helper stores operations in a ledger scoped to the resolved destination store. An explicit operation ID from a caller is retained verbatim. The Go client derives an ID when its caller omits one: `sha256:` followed by the lowercase hexadecimal request digest. It does this before starting the child, so even a transport error carries a known operation ID.
 
 The helper independently computes the same digest for every request. A given operation ID may not be reused with a different digest. The ID is not an Antigravity conversation UUID; the helper allocates and durably records native IDs separately. A caller can intentionally request another copy using a fresh explicit operation ID.
 

@@ -1,0 +1,61 @@
+name: Go client
+
+on:
+  pull_request:
+    paths:
+      - 'client/**'
+      - 'schema/**'
+      - 'examples/**'
+      - '.github/workflows/client.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'client/**'
+      - 'schema/**'
+      - 'examples/**'
+      - '.github/workflows/client.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: client-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / Go ${{ matrix.go }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        go: ['1.27.4']
+        include:
+          - os: ubuntu-latest
+            go: '1.26.11'
+    defaults:
+      run:
+        working-directory: client
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: ${{ matrix.go }}
+          cache: false
+      - name: Check formatting
+        run: test -z "$(gofmt -l .)"
+      - name: Check independent module and fixtures
+        run: |
+          test "$(go list -m all | wc -l | tr -d '[:space:]')" = 1
+          cmp testdata/import-request.json ../examples/import-request.json
+          cmp testdata/request-digest.json ../examples/request-digest.json
+      - name: Vet
+        run: go vet ./...
+      - name: Contract tests
+        run: go test -race -shuffle=on -timeout=3m ./...
