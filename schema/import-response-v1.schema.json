@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/drolevar/agy-import/raw/main/schema/import-response-v1.schema.json",
+  "title": "agy-import response v1 (proposed)",
+  "description": "Responses allow additive fields. Successful structural verification is not a native-resume claim.",
+  "type": "object",
+  "required": ["protocol", "protocol_version", "operation_id", "status"],
+  "properties": {
+    "protocol": {"const": "agy-import"},
+    "protocol_version": {"type": "integer", "const": 1}
+  },
+  "oneOf": [
+    {"$ref": "#/$defs/success"},
+    {"$ref": "#/$defs/plan"},
+    {"$ref": "#/$defs/failure"}
+  ],
+  "$defs": {
+    "operation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+      "not": {"pattern": "[^A-Za-z0-9._:-]"}
+    },
+    "nonempty_string": {"type": "string", "minLength": 1},
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {"$ref": "#/$defs/nonempty_string"},
+          "message": {"type": "string"}
+        }
+      }
+    },
+    "success": {
+      "type": "object",
+      "required": ["conversation_id", "workspace", "database_path", "transcript_path", "messages_written", "representation", "verification", "warnings"],
+      "properties": {
+        "status": {"enum": ["created", "already_exists"]},
+        "operation_id": {"$ref": "#/$defs/operation_id"},
+        "conversation_id": {"$ref": "#/$defs/nonempty_string"},
+        "workspace": {"$ref": "#/$defs/nonempty_string"},
+        "database_path": {"$ref": "#/$defs/nonempty_string"},
+        "transcript_path": {"$ref": "#/$defs/nonempty_string"},
+        "messages_written": {"type": "integer", "minimum": 1},
+        "representation": {"const": "user_assistant_text"},
+        "verification": {
+          "type": "object",
+          "required": ["storage", "transcript_round_trip", "native_resume"],
+          "properties": {
+            "storage": {"const": "passed"},
+            "transcript_round_trip": {"const": "passed"},
+            "native_resume": {"const": "not_run"}
+          }
+        },
+        "warnings": {"$ref": "#/$defs/warnings"}
+      }
+    },
+    "plan": {
+      "type": "object",
+      "required": ["workspace", "messages_planned", "representation", "warnings"],
+      "properties": {
+        "status": {"const": "planned"},
+        "operation_id": {"$ref": "#/$defs/operation_id"},
+        "workspace": {"$ref": "#/$defs/nonempty_string"},
+        "messages_planned": {"type": "integer", "minimum": 1},
+        "representation": {"const": "user_assistant_text"},
+        "warnings": {"$ref": "#/$defs/warnings"}
+      }
+    },
+    "failure": {
+      "type": "object",
+      "required": ["error"],
+      "properties": {
+        "status": {"const": "error"},
+        "operation_id": {"anyOf": [{"$ref": "#/$defs/operation_id"}, {"type": "null"}]},
+        "conversation_id": {"$ref": "#/$defs/nonempty_string"},
+        "error": {
+          "type": "object",
+          "required": ["code", "message", "outcome"],
+          "properties": {
+            "code": {"$ref": "#/$defs/nonempty_string"},
+            "message": {"$ref": "#/$defs/nonempty_string"},
+            "outcome": {"enum": ["not_started", "committed", "uncertain"]}
+          }
+        }
+      }
+    }
+  }
+}

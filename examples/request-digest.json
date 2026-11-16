@@ -1,0 +1,8 @@
+{
+  "request_file": "import-request.json",
+  "algorithm": "sha256-length-prefixed-utf8-tokens-v1",
+  "token_count": 18,
+  "canonical_byte_length": 333,
+  "request_digest": "8ac001959a1c5881282896d652df4b0fc2f6fffd0b357b920711105536c6130f",
+  "derived_operation_id": "sha256:8ac001959a1c5881282896d652df4b0fc2f6fffd0b357b920711105536c6130f"
+}
