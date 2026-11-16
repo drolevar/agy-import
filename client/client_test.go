@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -502,11 +503,13 @@ func TestMatchingCanonicalWorkspace(t *testing.T) {
 	if !sameWorkspace(link, directory) {
 		t.Fatal("same directory through symlink should match")
 	}
-	// Cleaning before resolving a symlink changes the meaning of link/...
-	// Stat must resolve the original spelling, not a lexically cleaned path.
+	// Unix traverses the symlink before the parent segment; Windows resolves
+	// the parent segment to the link's containing directory. Match the host
+	// filesystem's identity semantics without cleaning the path ourselves.
 	withParent := link + string(filepath.Separator) + ".."
-	if sameWorkspace(withParent, filepath.Dir(link)) {
-		t.Fatal("lexically equal paths through symlink/.. identify different directories")
+	wantMatch := runtime.GOOS == "windows"
+	if got := sameWorkspace(withParent, filepath.Dir(link)); got != wantMatch {
+		t.Fatalf("symlink/.. workspace equality on %s = %v; want %v", runtime.GOOS, got, wantMatch)
 	}
 }
 
