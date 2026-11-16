@@ -136,15 +136,24 @@ func TestImplicitCurrentDirectoryIsRejected(t *testing.T) {
 }
 
 func TestExplicitRelativePathResolvesBeforeLaunch(t *testing.T) {
-	path := copyTestExecutable(t, t.TempDir(), "relative-helper")
+	directory := t.TempDir()
+	path := copyTestExecutable(t, directory, "relative-helper")
 	cwd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
 	}
-	relative, err := filepath.Rel(cwd, path)
-	if err != nil {
+	// The checkout and temporary directory may be on different Windows
+	// volumes. Resolve from the temporary directory so the explicit relative
+	// path stays on one volume without writing into the module directory.
+	if err := os.Chdir(directory); err != nil {
 		t.Fatal(err)
 	}
+	t.Cleanup(func() {
+		if err := os.Chdir(cwd); err != nil {
+			t.Errorf("restore working directory: %v", err)
+		}
+	})
+	relative := "." + string(filepath.Separator) + filepath.Base(path)
 	got, err := resolveExecutable(relative)
 	if err != nil {
 		t.Fatal(err)
