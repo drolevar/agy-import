@@ -1,6 +1,14 @@
 # Implementation plan
 
-This is a plan for future implementation. The current change provides documentation, schemas, and examples only. It does not ship an executable or client package, and no native Antigravity compatibility has been verified by this project.
+This plan tracks the complete native-import goal. The consumer contract and independent Go client are implemented in this checkout; the client is exercised against a fake helper. No native importer executable is shipped, no client release is tagged, and no native Antigravity compatibility has been verified by this project.
+
+| Milestone | Current state |
+| --- | --- |
+| Consumer contract | Documented, with schemas and shared examples; proposed v1 remains unreleased |
+| Independent Go client | Implemented, with request, discovery, transport, and fake-helper tests |
+| Native storage profile and installer | Pending |
+| Real native continuation and showagent discovery | Not run |
+| Showagent adapter and release packaging | Pending |
 
 ## Outcome
 
@@ -26,6 +34,8 @@ The contract must define:
 
 ## 2. Implement the independent Go client
 
+The [client module](../client/) now provides `New`, `Import`, `Preview`, and `RequestDigest`, with typed requests, results, and errors. Its tests are self-contained and use only synthetic data. The CI workflow runs on Linux, Windows, and macOS and separately checks that the module has no third-party dependencies. See the client README for reproduction commands and the workflow run for the results on each platform.
+
 Create `github.com/drolevar/agy-import/client` as its own Go module using only the standard library. Provide request/result types and a normal `Import(ctx, request)` call. Share the wire types with the helper without making the client depend on native storage packages.
 
 Implement explicit-path, sibling-executable, and `PATH` discovery as documented. Keep discovery deterministic and return actionable missing-helper errors. Accept an existing operation ID or derive the documented canonical `sha256:<digest>` identity before process launch. Spawn the helper directly, send JSON on stdin, and bound captured output. Preserve operation identity and cancellation causes alongside the import outcome classification. Do not retry mutations automatically.
@@ -37,6 +47,8 @@ Use a fabricated helper executable to verify transport behavior before a native 
 ## 3. Establish one current native storage profile
 
 Choose an exact installed Antigravity CLI build on the initial development platform and record its version, architecture, executable digest, and observed schema. Use synthetic sessions in an isolated profile to identify required step records, protobuf fields, IDs, summary metadata, workspace representation, and transcript mirrors.
+
+Implement the [schema compatibility policy](schema-compatibility.md) as the native writer's mandatory gate. Selection requires both a verified build and a matching actual store profile; recovery must retain and revalidate the adapter and format generation that began the operation.
 
 The existing [session-migrate format research](https://github.com/xhluca/session-migrate/blob/45351ff95ce79684c23377920b92026ecbe9759b/docs/antigravity-format.md) and [interoperability fixture project](https://github.com/xhluca/antigravity-session-interoperability) are reference material. Their proven target is Antigravity CLI 1.1.16 on Linux x86-64. Verify current behavior rather than silently extending that claim to another release. Preserve attribution and applicable license notices for reused material.
 

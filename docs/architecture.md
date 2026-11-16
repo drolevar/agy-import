@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes the planned implementation. This documentation-only baseline does not contain a working CLI, Go client, or native Antigravity writer, and makes no compatibility claim for an installed Antigravity build.
+This document describes the full architecture. The independent [Go client](../client/) is implemented and tested against a fake helper. The CLI, native Antigravity writer, and recovery installer remain planned; no installed Antigravity build is currently claimed as supported.
 
 ## Purpose
 
@@ -34,9 +34,9 @@ Source workspace paths are provenance. The destination workspace must be an expl
 
 ## Go modules and distribution
 
-The production helper will be Go. The public client will be a separate standard-library-only module, `github.com/drolevar/agy-import/client`, with its own release tags. This prevents the helper's SQLite/protobuf requirements from entering showagent's module dependency graph.
+The production helper will be Go. The public client is a separate standard-library-only module, `github.com/drolevar/agy-import/client`, intended to have its own release tags. This prevents the helper's SQLite/protobuf requirements from entering showagent's module dependency graph.
 
-The client will handle executable discovery, request encoding, operation identity, bounded stdout/stderr capture, cancellation, result decoding, and typed errors. Native compatibility checks and storage decisions belong in the helper. A supported import will not require a preliminary `doctor` or `capabilities` invocation.
+The client handles executable discovery, request encoding, operation identity, bounded stdout/stderr capture, cancellation, result decoding, and typed errors. Native compatibility checks and storage decisions belong in the helper. A supported import will not require a preliminary `doctor` or `capabilities` invocation.
 
 Helper discovery must support an explicit executable override, an installation beside showagent, and `PATH`, in a documented order. Release packaging must make at least one of these paths straightforward. The client must not download or update an executable during an import. It invokes an argument vector directly, without a shell.
 
@@ -45,6 +45,8 @@ The helper is expected to use `database/sql` with [modernc.org/sqlite](https://p
 ## Native adapters and discovery
 
 A storage adapter is selected by verified target-build and schema evidence. Unknown combinations fail before publication. A matching SQL table layout alone is insufficient proof that protobuf semantics and auxiliary files are compatible.
+
+The [schema compatibility policy](schema-compatibility.md) defines the required build/store checks, inspection constraints, upgrade handling, and native certification evidence. These guards belong to the planned helper and installer; the implemented client validates only the public process contract.
 
 Current showagent [discovers Antigravity through JSONL mirrors](https://github.com/drolevar/showagent/blob/6a2756ac1556fdbb8ca8932c249bc57558287e7b/internal/session/antigravity.go), checks separately for the conversation database, and reads workspace metadata from protobuf/cache sources. Consequently, an integration-ready import must cover the conversation database, required summary/workspace metadata, and a verified transcript mirror. The result distinguishes database and transcript paths; showagent's `Row.File` receives the transcript path.
 
@@ -62,16 +64,16 @@ The wire request requires `operation_id`. The Go client accepts an existing call
 
 Errors distinguish an invocation with no published native changes, a known commit followed by a later failure, and an uncertain outcome. A no-change result for the current invocation does not rule out a commit by an earlier attempt under the same operation ID. Private staging or intent records may exist before publication. Cancellation cannot guarantee rollback after publication. The client does not retry mutations automatically. Repeating the same request is the normal recovery entry point; callers should not need to orchestrate storage repair.
 
-## Planned repository layout
+## Repository layout and remaining components
 
 | Path | Purpose |
 | --- | --- |
 | `docs/` | Architecture, protocol, integration, compatibility evidence |
 | `schema/`, `examples/` | Public schemas and synthetic contract examples |
 | `client/` | Independent Go client module and protocol DTOs |
-| `cmd/agy-import/` | CLI dispatch and process I/O |
-| `internal/antigravity/` | Target detection and native adapters |
-| `internal/install/` | Publication, operation journal, recovery |
-| `testdata/` | Synthetic fixtures and native compatibility evidence |
+| `cmd/agy-import/` (planned) | CLI dispatch and process I/O |
+| `internal/antigravity/` (planned) | Target detection and native adapters |
+| `internal/install/` (planned) | Publication, operation journal, recovery |
+| `testdata/` (planned) | Native fixtures and compatibility evidence |
 
-The [implementation plan](implementation-plan.md) defines the gates between these planned components and a usable release.
+The client's synthetic fixtures live in `client/testdata/` so its module tests are self-contained. The [implementation plan](implementation-plan.md) defines the remaining gates to a usable native release.

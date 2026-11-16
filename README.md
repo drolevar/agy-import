@@ -2,7 +2,7 @@
 
 Create a new Antigravity CLI conversation from selected user and assistant history, without running a model turn during import.
 
-**Status: design and protocol specification.** This repository does not yet contain a working importer, a released Go client, or a verified adapter for a current Antigravity build. Commands and Go examples below describe the intended interface. The schemas and JSON examples are concrete contract artifacts, not evidence of native compatibility.
+**Status: Go client implemented; native importer pending.** The independent [client module](client/) provides typed imports and previews, executable discovery, stable operation IDs, and subprocess handling, with contract tests against a fake helper. This repository does not yet provide the native importer executable, a released client tag, or a verified Antigravity storage adapter. The current supported-native-build set is empty.
 
 ## Make consumption easy
 
@@ -12,9 +12,9 @@ Create a new Antigravity CLI conversation from selected user and assistant histo
 result, err := importer.Import(ctx, request)
 ```
 
-The client resolves the executable, fills the protocol envelope and operation ID, sends the request on stdin, and validates a structured result. The helper checks target compatibility, reconciles retries, creates the session, and verifies its output inside that operation. Consumers do not need to sequence `doctor`, `capabilities`, or `status` commands.
+The client resolves the executable, fills the protocol envelope and operation ID, sends the request on stdin, and validates a structured result. The planned helper checks target compatibility, reconciles retries, creates the session, and verifies its output inside that operation. Consumers do not need to sequence `doctor`, `capabilities`, or `status` commands.
 
-Two separately released Go modules are planned:
+The client is an independent Go module. The native helper will have a separate module and release lifecycle:
 
 | Module | Responsibility |
 | --- | --- |
@@ -22,6 +22,8 @@ Two separately released Go modules are planned:
 | `github.com/drolevar/agy-import/client` | Public request/result types and subprocess client; standard library only |
 
 The separate client module keeps SQLite and protobuf dependencies out of `showagent`'s module graph. The process boundary remains available to consumers in any language.
+
+See the [client README](client/README.md) for the implemented API, discovery order, retry semantics, and development commands. Its process tests cover synthetic helper behavior; they do not establish native import compatibility.
 
 ## Scope of the first implementation
 
@@ -39,9 +41,10 @@ The first implementation does not transfer native execution state, pending tools
 | Document | Purpose |
 | --- | --- |
 | [Architecture](docs/architecture.md) | Why the helper exists, ownership, target storage and recovery |
+| [Schema compatibility](docs/schema-compatibility.md) | Native build/store checks, upgrade refusal, recovery, and certification policy |
 | [Showagent integration](docs/showagent-integration.md) | One-call consumer API, discovery, packaging and changes to the existing adapter |
 | [Protocol v1](docs/protocol.md) | Request/result contract, operation identity and error semantics |
-| [Implementation plan](docs/implementation-plan.md) | Ordered milestones and evidence needed before enabling native writes |
+| [Implementation plan](docs/implementation-plan.md) | Current progress, remaining milestones, and evidence needed before enabling native writes |
 | [Request schema](schema/import-request-v1.schema.json) | Machine-readable request shape |
 | [Response schema](schema/import-response-v1.schema.json) | Success, preview and error shapes |
 
@@ -66,7 +69,7 @@ The normal integration needs only `import`. `--dry-run` is the preview operation
 
 Publish one executable per supported OS/architecture, stable archive names, checksums, and a compatibility manifest. The client can find a helper installed beside the calling executable or on `PATH`, with explicit configuration taking precedence. A future `showagent` distribution can bundle a pinned helper as a second executable. Imports must not trigger downloads or updates.
 
-No installation command or release asset is available from this design-only revision. The current supported-native-build set is empty.
+No published installation command or release asset is available yet. The client module can be built and tested from this checkout; native imports require the remaining implementation and compatibility gates.
 
 ## Prior work
 
