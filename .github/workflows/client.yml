@@ -7,6 +7,7 @@ on:
       - 'schema/**'
       - 'examples/**'
       - '.github/workflows/client.yml'
+      - '.gitattributes'
   push:
     branches: [main]
     paths:
@@ -14,6 +15,7 @@ on:
       - 'schema/**'
       - 'examples/**'
       - '.github/workflows/client.yml'
+      - '.gitattributes'
   workflow_dispatch:
 
 permissions:
@@ -49,7 +51,12 @@ jobs:
           go-version: ${{ matrix.go }}
           cache: false
       - name: Check formatting
-        run: test -z "$(gofmt -l .)"
+        run: |
+          unformatted_go_files="$(gofmt -l .)"
+          if [ -n "$unformatted_go_files" ]; then
+            printf '%s\n' "$unformatted_go_files"
+            exit 1
+          fi
       - name: Check independent module and fixtures
         run: |
           test "$(go list -m all | wc -l | tr -d '[:space:]')" = 1
